@@ -27,14 +27,17 @@ yahoo_stockquote_symbols = [
   'CSCO',
   'QCOM'
 ]
+# #s = yahoo_stockquote_symbols.join(',').upcase
+
+
 
 Dashing.scheduler.every '15s', :first_in => 0 do
 
-  aapl = StockQuote::Stock.quote("aapl")
-  puts aapl.symbol
-  puts aapl.ask
-  puts aapl.change
-  puts aapl.name
+  # aapl = StockQuote::Stock.quote("aapl")
+  # puts aapl.symbol
+  # puts aapl.ask
+  # puts aapl.change
+  # puts aapl.name
 
 
 
@@ -55,8 +58,72 @@ Dashing.scheduler.every '15s', :first_in => 0 do
   # year_range, days_value_change, days_value_change_realtime, stock_exchange, dividend_yield, percent_change, 
   # error_indicationreturnedforsymbolchangedinvalid, date, open, high, low, close, adj_close
   
-  # #s = yahoo_stockquote_symbols.join(',').upcase
-  # #http://download.finance.yahoo.com/d/quotes.csv?s=AAPL+GOOG+MSFT
+
+  stocklist = Array.new
+  yahoo_stockquote_symbols.each do |s|
+    stock = StockQuote::Stock.quote(s.downcase)
+    sname = stock.name
+    symbol = stock.symbol
+    current = stock.ask
+    change = stock.change
+
+    if stock.response_code == 200
+      puts "****"
+      puts sname
+      puts symbol
+      puts current
+      puts change
+      puts "****"
+
+
+  #   # iterate over different stock symbols and create
+  #   # the list and single values to be pushed to the frontend
+  #   data.each do |line|
+  #     sname = line[0]
+  #     symbol = line[1]
+  #     current = line[2].to_f
+  #     change = line[3].to_f
+
+  
+
+      # add data to list
+
+      stocklist.push({
+        label: sname,
+        value: current
+      
+})
+
+
+
+      # send single value and change to dashboard
+      widgetVarname = "yahoo_stock_quote_" + symbol.gsub(/[^A-Za-z0-9]+/, '_').downcase
+      widgetData = {
+        current: current
+      }
+      if change != 0.0
+        widgetData[:last] = current + change
+      end
+      if defined?(Dashing.send_event)
+        Dashing.send_event(widgetVarname, widgetData)
+      else
+        print "current: #{symbol} #{current} #{change} #{widgetVarname}\n"
+      end
+    end
+  end
+
+    # send list to dashboard
+    if defined?(Dashing.send_event)
+      Dashing.send_event('yahoo_stock_quote_list', { items: stocklist })
+    else
+      print stocklist
+      print "neext"
+    end
+end
+
+
+
+# #http://download.finance.yahoo.com/d/quotes.csv?s=AAPL+GOOG+MSFT
   # http = Net::HTTP.new("download.finance.yahoo.com")
   # response = http.request(Net::HTTP::Get.new("/d/quotes.csv?s=AAPL"))
   # puts response.code
@@ -68,57 +135,3 @@ Dashing.scheduler.every '15s', :first_in => 0 do
   #   # read data from csv
   #   data = CSV.parse(response.body)
   #   puts data
-
-  # stocklist = Array.new
-  # yahoo_stockquote_symbols.each do |s|
-  #   sname = s.name
-  # end
-
-
-  #   # iterate over different stock symbols and create
-  #   # the list and single values to be pushed to the frontend
-  #   data.each do |line|
-  #     sname = line[0]
-  #     symbol = line[1]
-  #     current = line[2].to_f
-  #     change = line[3].to_f
-
-  #   puts "****"
-  #   puts sname
-  #   puts symbol
-  #   puts current
-  #   puts change
-  #   puts "****"
-
-  #     # add data to list
-  #     stocklist.push({
-  #       label: sname,
-  #       value: current.round(2)
-  #     })
-
-
-
-  #     # send single value and change to dashboard
-  #     widgetVarname = "yahoo_stock_quote_" + symbol.gsub(/[^A-Za-z0-9]+/, '_').downcase
-  #     widgetData = {
-  #       current: current
-  #     }
-  #     if change != 0.0
-  #       widgetData[:last] = current + change
-  #     end
-  #     if defined?(Dashing.send_event)
-  #       Dashing.send_event(widgetVarname, widgetData)
-  #     else
-  #       print "current: #{symbol} #{current} #{change} #{widgetVarname}\n"
-  #     end
-  #   end
-
-  #   # send list to dashboard
-  #   if defined?(Dashing.send_event)
-  #     Dashing.send_event('yahoo_stock_quote_list', { items: stocklist })
-  #   else
-  #     print stocklist
-  #     print "neext"
-  #   end
-  # end
-end
