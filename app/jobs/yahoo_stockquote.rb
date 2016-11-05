@@ -61,19 +61,20 @@ Dashing.scheduler.every '15s', :first_in => 0 do
 
   stocklist = Array.new
   yahoo_stockquote_symbols.each do |s|
-    stock = StockQuote::Stock.quote(s.downcase)
-    sname = stock.name
-    symbol = stock.symbol
-    current = stock.ask
-    change = stock.change
 
     if stock.response_code == 200
+      sname = stock.name
+      symbol = stock.symbol
+      current = stock.ask
+      change = stock.change
       puts "****"
       puts sname
       puts symbol
       puts current
       puts change
       puts "****"
+
+    #puts current.class
 
 
   #   # iterate over different stock symbols and create
@@ -91,10 +92,7 @@ Dashing.scheduler.every '15s', :first_in => 0 do
       stocklist.push({
         label: sname,
         value: current
-      
-})
-
-
+        })
 
       # send single value and change to dashboard
       widgetVarname = "yahoo_stock_quote_" + symbol.gsub(/[^A-Za-z0-9]+/, '_').downcase
